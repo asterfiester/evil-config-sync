@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: attacker-controlled
+  labels:
+    app: bug0172-poc
+  annotations:
+    bug: "BUG-0172 (D-94602625) gkehub Config Sync two-plane privesc"
